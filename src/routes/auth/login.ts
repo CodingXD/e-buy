@@ -15,6 +15,11 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           },
           required: ["username", "password"],
         },
+        response: {
+          200: {
+            type: "string",
+          },
+        },
       },
     },
     async function (request, reply) {
@@ -42,7 +47,8 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           return fastify.httpErrors.badRequest("Password is incorrect");
         }
 
-        return null;
+        const token = fastify.jwt.sign({ user: username });
+        return token;
       } catch (error: any) {
         return fastify.httpErrors.internalServerError(error);
       }

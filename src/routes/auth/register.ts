@@ -15,6 +15,11 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           },
           required: ["username", "password", "type"],
         },
+        response: {
+          200: {
+            type: "string",
+          },
+        },
       },
     },
     async function (request, reply) {
@@ -40,7 +45,8 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           SQL`INSERT INTO users(username, password, type) VALUES(${username}, ${hashedPassword}, ${type})`
         );
 
-        return null;
+        const token = fastify.jwt.sign({ user: username });
+        return token;
       } catch (error: any) {
         return fastify.httpErrors.internalServerError(error);
       }
