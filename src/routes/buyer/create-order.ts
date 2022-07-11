@@ -92,10 +92,10 @@ const createOrder: FastifyPluginAsync = async (
 
         // also check if seller has the product
         if (rowCount !== body.length) {
-          for (let i = 0; i < rowCount; i++) {
+          for (let i = 0; i < body.length; i++) {
             let flag = 0;
-            for (let j = 0; j < body.length; j++) {
-              if (rows[i].id === body[j].id) {
+            for (let j = 0; j < rowCount; j++) {
+              if (rows[j].id === body[i].id) {
                 flag = 1;
                 break;
               }
@@ -103,8 +103,7 @@ const createOrder: FastifyPluginAsync = async (
 
             if (flag === 0) {
               notInStockItems.push({
-                id: rows[i].id,
-                name: rows[i].name,
+                id: body[i].id,
                 quantity: 0,
               });
             }
