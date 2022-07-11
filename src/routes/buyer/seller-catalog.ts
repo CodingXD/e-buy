@@ -39,7 +39,7 @@ const listSellers: FastifyPluginAsync = async (
               properties: {
                 id: { type: "integer" },
                 name: { type: "string" },
-                price: { type: "number" },
+                price: { type: "string" },
                 quantity: { type: "number" },
               },
             },

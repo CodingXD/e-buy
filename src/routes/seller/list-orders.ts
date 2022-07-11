@@ -49,7 +49,7 @@ const listOrders: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       try {
         const client = await fastify.pg.connect();
         const { rows, rowCount } = await client.query(
-          SQL`SELECT orders.id, name, orders.created_on FROM orders, products, users WHERE orders.user_id = users.id AND orders.product_id = products.id AND user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
+          SQL`SELECT orders.id, name, orders.created_on FROM orders, products, users WHERE orders.user_id = users.id AND orders.product_id = products.id AND orders.user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
         );
 
         const orders = [];

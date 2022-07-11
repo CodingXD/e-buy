@@ -71,7 +71,7 @@ const createOrder: FastifyPluginAsync = async (
         }
 
         const { rows, rowCount } = await client.query(
-          SQL`SELECT id, name, quantity FROM products WHERE id IN (${ids})`
+          SQL`SELECT id, name, quantity FROM products WHERE id = ANY(${ids}) AND user_id = ${seller_id}`
         );
 
         const notInStockItems = [];
@@ -86,6 +86,27 @@ const createOrder: FastifyPluginAsync = async (
                 });
               }
               break;
+            }
+          }
+        }
+
+        // also check if seller has the product
+        if (rowCount !== body.length) {
+          for (let i = 0; i < rowCount; i++) {
+            let flag = 0;
+            for (let j = 0; j < body.length; j++) {
+              if (rows[i].id === body[j].id) {
+                flag = 1;
+                break;
+              }
+            }
+
+            if (flag === 0) {
+              notInStockItems.push({
+                id: rows[i].id,
+                name: rows[i].name,
+                quantity: 0,
+              });
             }
           }
         }
