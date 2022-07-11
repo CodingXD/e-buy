@@ -11,7 +11,7 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           properties: {
             username: { type: "string" },
             password: { type: "string" },
-            type: { type: "string" },
+            type: { type: "string", enum: ["buyer", "seller"] },
           },
           required: ["username", "password", "type"],
         },
@@ -30,8 +30,8 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       };
 
       try {
-        await fastify.pg.connect();
-        const { rowCount } = await fastify.pg.query(
+        const client = await fastify.pg.connect();
+        const { rowCount } = await client.query(
           SQL`SELECT 1 FROM users WHERE username = ${username}`
         );
 
@@ -41,7 +41,7 @@ const register: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
         const hashedPassword = await fastify.hashPassword(password);
 
-        await fastify.pg.query(
+        await client.query(
           SQL`INSERT INTO users(username, password, type) VALUES(${username}, ${hashedPassword}, ${type})`
         );
 

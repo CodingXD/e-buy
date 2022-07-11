@@ -1,6 +1,5 @@
 import { FastifyPluginAsync } from "fastify";
 import { SQL } from "sql-template-strings";
-import { hash, genSaltSync } from "bcrypt";
 
 const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.post(
@@ -29,8 +28,8 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
       };
 
       try {
-        await fastify.pg.connect();
-        const { rows, rowCount } = await fastify.pg.query(
+        const client = await fastify.pg.connect();
+        const { rows, rowCount } = await client.query(
           SQL`SELECT password FROM users WHERE username = ${username}`
         );
 
