@@ -43,7 +43,7 @@ const createOrder: FastifyPluginAsync = async (
                   properties: {
                     id: { type: "integer" },
                     name: { type: "string" },
-                    remaining: { type: "number" },
+                    quantity: { type: "number" },
                   },
                 },
               },
@@ -71,18 +71,18 @@ const createOrder: FastifyPluginAsync = async (
         }
 
         const { rows, rowCount } = await client.query(
-          SQL`SELECT id, name, remaining FROM products WHERE id IN (${ids})`
+          SQL`SELECT id, name, quantity FROM products WHERE id IN (${ids})`
         );
 
         const notInStockItems = [];
         for (let i = 0; i < rowCount; i++) {
           for (let j = 0; j < body.length; j++) {
             if (rows[i].id === body[j].id) {
-              if (rows[i].remaining < body[j].quantity) {
+              if (rows[i].quantity < body[j].quantity) {
                 notInStockItems.push({
                   id: rows[i].id,
                   name: rows[i].name,
-                  remaining: rows[i].remaining,
+                  quantity: rows[i].quantity,
                 });
               }
               break;
@@ -99,7 +99,7 @@ const createOrder: FastifyPluginAsync = async (
         }
 
         // otherwise create new order
-        const query = SQL`INSERT INTO orders(product_id, seller_id, quantity) VALUES`;
+        const query = SQL`INSERT INTO orders(product_id, user_id, quantity) VALUES`;
         for (let i = 0; i < body.length; i++) {
           if (i === 0) {
             query.append(

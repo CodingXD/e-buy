@@ -40,7 +40,7 @@ const listSellers: FastifyPluginAsync = async (
                 id: { type: "integer" },
                 name: { type: "string" },
                 price: { type: "number" },
-                remaining: { type: "number" },
+                quantity: { type: "number" },
               },
             },
           },
@@ -60,7 +60,7 @@ const listSellers: FastifyPluginAsync = async (
       try {
         const client = await fastify.pg.connect();
         const { rows, rowCount } = await client.query(
-          SQL`SELECT id, name, price, remaining FROM products WHERE user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
+          SQL`SELECT id, name, price, quantity FROM products WHERE user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
         );
 
         const products = [];
@@ -69,7 +69,7 @@ const listSellers: FastifyPluginAsync = async (
             id: rows[i].id,
             name: rows[i].name,
             price: rows[i].price,
-            remaining: rows[i].remaining,
+            quantity: rows[i].quantity,
           });
         }
 
