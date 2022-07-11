@@ -27,7 +27,13 @@ const listSellers: FastifyPluginAsync = async (
         response: {
           200: {
             type: "array",
-            items: { type: "string" },
+            items: {
+              type: "object",
+              properties: {
+                id: { type: "integer" },
+                name: { type: "string" },
+              },
+            },
           },
         },
       },
@@ -42,12 +48,12 @@ const listSellers: FastifyPluginAsync = async (
       try {
         const client = await fastify.pg.connect();
         const { rows, rowCount } = await client.query(
-          SQL`SELECT username FROM users WHERE type = 'seller' LIMIT ${limit} OFFSET ${offset}`
+          SQL`SELECT id, username FROM users WHERE type = 'seller' LIMIT ${limit} OFFSET ${offset}`
         );
 
         const sellers = [];
         for (let i = 0; i < rowCount; i++) {
-          sellers.push(rows[i]);
+          sellers.push({ id: rows[i].id, name: rows[i].username });
         }
 
         return sellers;

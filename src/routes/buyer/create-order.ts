@@ -43,7 +43,7 @@ const createOrder: FastifyPluginAsync = async (
                   properties: {
                     id: { type: "integer" },
                     name: { type: "string" },
-                    quantity: { type: "number" },
+                    remaining: { type: "number" },
                   },
                 },
               },
@@ -60,6 +60,17 @@ const createOrder: FastifyPluginAsync = async (
       const { body } = request as {
         body: { id: number; quantity: number }[];
       };
+
+      // merge duplicates if any
+      for (let i = 0; i < body.length; i++) {
+        for (let j = 0; j < body.length; j++) {
+          if (body[i].id === body[j].id && i !== j) {
+            body[j].quantity += body[i].quantity;
+            body.splice(i, 1);
+            break;
+          }
+        }
+      }
 
       try {
         const client = await fastify.pg.connect();
@@ -82,7 +93,7 @@ const createOrder: FastifyPluginAsync = async (
                 notInStockItems.push({
                   id: rows[i].id,
                   name: rows[i].name,
-                  quantity: rows[i].quantity,
+                  remaining: rows[i].quantity,
                 });
               }
               break;
@@ -104,7 +115,8 @@ const createOrder: FastifyPluginAsync = async (
             if (flag === 0) {
               notInStockItems.push({
                 id: body[i].id,
-                quantity: 0,
+                name: "PRODUCT NOT FOUND",
+                remaining: 0,
               });
             }
           }
@@ -134,6 +146,13 @@ const createOrder: FastifyPluginAsync = async (
         }
 
         await client.query(query);
+
+        // reduce existing product quantity
+        for (let i = 0; i < body.length; i++) {
+          client.query(
+            SQL`UPDATE products SET quantity = ${body[i].quantity} - quantity WHERE id = ${body[i].id}`
+          );
+        }
         return null;
       } catch (error: any) {
         return fastify.httpErrors.internalServerError(error);

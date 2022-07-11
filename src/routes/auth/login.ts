@@ -49,7 +49,7 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
         const token = fastify.jwt.sign(
           { user: username },
           {
-            expiresIn: "120s",
+            expiresIn: "540s",
           }
         );
         return token;
