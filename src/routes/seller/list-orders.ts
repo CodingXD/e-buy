@@ -1,20 +1,17 @@
 import { FastifyPluginAsync } from "fastify";
 import SQL from "sql-template-strings";
 
-const listSellers: FastifyPluginAsync = async (
-  fastify,
-  opts
-): Promise<void> => {
+const listOrders: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
   fastify.get(
-    "/seller-catalog/:seller_id",
+    "/orders/:seller_id",
     {
       schema: {
-        headers: {
+        params: {
           type: "object",
           properties: {
-            authorization: { type: "string", minLength: 8 },
+            seller_id: { type: "number", minimum: 1 },
           },
-          required: ["authorization"],
+          required: ["seller_id"],
         },
         querystring: {
           type: "object",
@@ -24,29 +21,20 @@ const listSellers: FastifyPluginAsync = async (
           },
           required: ["limit"],
         },
-        params: {
-          type: "object",
-          properties: {
-            seller_id: { type: "number", minimum: 1 },
-          },
-          required: ["seller_id"],
-        },
         response: {
           200: {
             type: "array",
             items: {
               type: "object",
               properties: {
-                id: { type: "integer" },
-                name: { type: "string" },
-                price: { type: "number" },
-                remaining: { type: "number" },
+                order_id: { type: "integer" },
+                item_name: { type: "string" },
+                ordered_on: { type: "string" },
               },
             },
           },
         },
       },
-      onRequest: [fastify.authenticate],
     },
     async function (request, reply) {
       const { seller_id } = request.params as {
@@ -60,20 +48,19 @@ const listSellers: FastifyPluginAsync = async (
       try {
         const client = await fastify.pg.connect();
         const { rows, rowCount } = await client.query(
-          SQL`SELECT id, name, price, remaining FROM products WHERE user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
+          SQL`SELECT orders.id, name, orders.created_on FROM orders, products, users WHERE orders.user_id = users.id AND orders.product_id = products.id AND user_id = ${seller_id} LIMIT ${limit} OFFSET ${offset}`
         );
 
-        const products = [];
+        const orders = [];
         for (let i = 0; i < rowCount; i++) {
-          products.push({
-            id: rows[i].id,
-            name: rows[i].name,
-            price: rows[i].price,
-            remaining: rows[i].remaining,
+          orders.push({
+            order_id: rows[i].id,
+            item_name: rows[i].name,
+            ordered_on: rows[i].created_on,
           });
         }
 
-        return products;
+        return orders;
       } catch (error: any) {
         return fastify.httpErrors.internalServerError(error);
       }
@@ -81,4 +68,4 @@ const listSellers: FastifyPluginAsync = async (
   );
 };
 
-export default listSellers;
+export default listOrders;

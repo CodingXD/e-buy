@@ -22,8 +22,8 @@ const createOrder: FastifyPluginAsync = async (
           items: {
             type: "object",
             properties: {
-              id: { type: "integer" },
-              quantity: { type: "integer" },
+              id: { type: "integer", minimum: 1 },
+              quantity: { type: "integer", minimum: 1 },
             },
             required: ["id", "quantity"],
           },
@@ -101,7 +101,16 @@ const createOrder: FastifyPluginAsync = async (
         // otherwise create new order
         const query = SQL`INSERT INTO orders(product_id, seller_id, quantity) VALUES`;
         for (let i = 0; i < body.length; i++) {
-          query.append(SQL`(${body[i].id}, ${seller_id}, ${body[i].quantity})`);
+          if (i === 0) {
+            query.append(
+              SQL`(${body[i].id}, ${seller_id}, ${body[i].quantity})`
+            );
+            continue;
+          }
+
+          query.append(
+            SQL`, (${body[i].id}, ${seller_id}, ${body[i].quantity})`
+          );
         }
 
         await client.query(query);
