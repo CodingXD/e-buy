@@ -7,9 +7,7 @@ To start using the project, do the following
 
 ## Setup PostgreSQL
 
-I prefer Docker for faster local development, simply run the below command from the project root directory
-
-### Using Powershell
+I prefer Docker for faster local development, simply run the below command from the project root directory using Powershell
 
 ```bash
 docker run --name postgres -e POSTGRES_PASSWORD=... -e POSTGRES_USER=... -e POSTGRES_DB=... -v ${pwd}/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d -d -p 5432:5432 postgres

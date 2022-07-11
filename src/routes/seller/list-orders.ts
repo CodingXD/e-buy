@@ -35,6 +35,7 @@ const listOrders: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           },
         },
       },
+      onRequest: [fastify.authenticate],
     },
     async function (request, reply) {
       const { seller_id } = request.params as {

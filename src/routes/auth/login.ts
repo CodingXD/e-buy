@@ -46,7 +46,12 @@ const login: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
           return fastify.httpErrors.badRequest("Password is incorrect");
         }
 
-        const token = fastify.jwt.sign({ user: username });
+        const token = fastify.jwt.sign(
+          { user: username },
+          {
+            expiresIn: "10s",
+          }
+        );
         return token;
       } catch (error: any) {
         return fastify.httpErrors.internalServerError(error);
